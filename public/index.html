@@ -1,0 +1,184 @@
+<!DOCTYPE html><html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuralMine</title><style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:url('https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg') no-repeat center center/cover;
+  color:white;
+}
+
+/* Overlay glow */
+body::before{
+  content:"";
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:radial-gradient(circle at 30% 30%, rgba(0,255,195,0.2), transparent);
+  z-index:-1;
+}
+
+/* Header */
+.header{
+  text-align:center;
+  padding:15px;
+  font-size:20px;
+  font-weight:bold;
+  color:#00ffc3;
+}
+
+/* Cards */
+.card{
+  margin:10px;
+  padding:15px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(10px);
+  border-radius:12px;
+  border:1px solid rgba(0,255,195,0.2);
+}
+
+/* Inputs */
+input{
+  width:100%;
+  padding:12px;
+  margin:5px 0;
+  border-radius:8px;
+  border:none;
+}
+
+/* Buttons */
+button{
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  background:#00ffc3;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* Balance */
+.balance{
+  font-size:28px;
+  color:#00ffc3;
+  text-shadow:0 0 10px #00ffc3;
+}
+
+/* Bot buttons */
+.bot{
+  margin-top:10px;
+}
+
+/* Footer */
+.footer{
+  text-align:center;
+  font-size:12px;
+  color:#aaa;
+  margin-top:20px;
+}
+</style></head><body><div class="header">NeuralMine</div><!-- AUTH --><div class="card">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password"><button onclick="register()">Register</button>
+<button onclick="login()">Login</button>
+
+</div><!-- BALANCE --><div class="card">
+  <div>Balance</div>
+  <div class="balance" id="bal">$0.00</div>
+  <button onclick="loadBalance()">Refresh Balance</button>
+</div><!-- BOTS --><div class="card">
+  <div class="bot">
+    <b>Standard Bot</b> - $5
+    <button onclick="buy(5)">Buy</button>
+  </div>  <div class="bot">
+    <b>Bronze Bot</b> - $15
+    <button onclick="buy(15)">Buy</button>
+  </div>  <div class="bot">
+    <b>Community Bot I</b> - $300
+    <button onclick="buy(300)">Buy</button>
+  </div>  <div class="bot">
+    <b>Community Bot II</b> - $500
+    <button onclick="buy(500)">Buy</button>
+  </div>
+</div><!-- WITHDRAW --><div class="card">
+  <input id="amount" placeholder="Withdraw amount">
+  <button onclick="withdraw()">Request Withdrawal</button>
+</div><div class="footer">
+  NeuralMine © AI Mining System
+</div><script>
+const API = "/api";
+let token = "";
+
+// REGISTER
+async function register(){
+  await fetch(API+"/register",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      email:email.value,
+      password:password.value
+    })
+  });
+  alert("Registered successfully");
+}
+
+// LOGIN
+async function login(){
+  const res = await fetch(API+"/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      email:email.value,
+      password:password.value
+    })
+  });
+
+  const data = await res.json();
+  token = data.token;
+
+  alert("Logged in");
+}
+
+// LOAD BALANCE
+async function loadBalance(){
+  const res = await fetch(API+"/balance",{
+    headers:{Authorization:token}
+  });
+
+  const data = await res.json();
+  document.getElementById("bal").innerText = "$"+Number(data.balance).toFixed(2);
+}
+
+// BUY BOT
+async function buy(amount){
+  const res = await fetch(API+"/pay",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:token
+    },
+    body:JSON.stringify({amount})
+  });
+
+  const data = await res.json();
+  window.location.href = data.link;
+}
+
+// WITHDRAW
+async function withdraw(){
+  await fetch(API+"/withdraw",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:token
+    },
+    body:JSON.stringify({
+      amount:Number(document.getElementById("amount").value)
+    })
+  });
+
+  alert("Withdrawal request sent");
+}
+</script></body>
+</html>
